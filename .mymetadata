@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-module
+  type="WEB"
+  name="H5Project"
+  id="myeclipse.1465011714151"
+  context-root="/H5Project"
+  j2ee-spec="5.0"
+  archive="H5Project.war">
+  <attributes>
+    <attribute name="webrootdir" value="WebRoot" />
+  </attributes>
+</project-module>
+

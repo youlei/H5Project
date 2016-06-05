@@ -1,0 +1,43 @@
+<div id="main">
+  <div class="main_viewport">
+    <div class="index_body" style='min-height: 630px'>
+      <div class="yulu_tab">
+        <div class="search_input" >
+          <input type="text" id="searchTxt">
+        </div>
+        <div class="search_button"> <i class="dc_icon_sear" id="search"></i> </div>
+      </div>
+	   <div id='scroller'>
+	    <ul id='telDetailListUl'>
+	   <% _.each(data,function(d){%> 
+		<li>
+			 <div class="duix_box">
+			<div class="duix_box_1"><%=d.title%></div>
+			<div class="duix_box_2">
+			  <div class="duix_box_2_l">范围：</div>
+			  <div class="duix_box_2_r"><%=d.content%></div>
+			</div>
+			
+			<div class="duix_box_2">
+			  <div class="duix_box_2_l">地址：</div>
+			  <div class="duix_box_2_r"><%=d.address%></div>
+			</div>
+			
+			<div class="duix_box_2">
+			  <div class="duix_box_2_l">电话：</div>
+			  <div class="duix_box_2_r "><%=d.lxfs%></div>
+			</div>
+		  </div>
+		<li> 
+		 	<%})%>
+	  </ul>
+     
+	</div> 
+     
+       
+       
+    </div>
+  </div>
+</div>
+
+ 
