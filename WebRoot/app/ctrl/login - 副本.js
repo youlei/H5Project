@@ -1,25 +1,6 @@
-define(["BaseView","text!TemplateLogin"],function(BaseView,template){
-		//console.log("login.................");
-	var tpl= _.template(template);
-	var html= tpl({ "data": {}});
-	$(html).appendTo($("body"));
-	var LoginView=BaseView.extend({
+define(['jquery','underscore','backbone','text!TemplateLogin','basePageView','userModel'],function(jquery,_,Backbone,TemplateLogin,basePageView,userModel){
 		
-		initialize:function(){
-			console.log("init............");
-			
-		},
-		onCreate:function(){
-			console.log("onCreate............");
-			
-		},
-		onShow:function(){
-			console.log("onShow............");
-			
-		},
-		
-	});
-	 /**
+	  
   	var LoginView=basePageView.extend({
   		events:{
   			"click #login":"login",
@@ -28,7 +9,7 @@ define(["BaseView","text!TemplateLogin"],function(BaseView,template){
   		},
   		login:function(e){
   			//UC.go("home",{anim:true});
-  			this.showLoading("璇锋眰鏈嶅姟鍣�..");
+  			this.showLoading("请求服务器...");
   			var self=this,
   				umodel=new userModel();
   				username=self.$el.find("#username").val(),
@@ -47,7 +28,7 @@ define(["BaseView","text!TemplateLogin"],function(BaseView,template){
   	  							localStorage.setItem("password",password);
   	  							UC.go("home");
   	  						}else{
-  	  							self.showAlert("鐢ㄦ埛鍚嶅瘑鐮侀敊璇�); 
+  	  							self.showAlert("用户名密码错误"); 
   	  						}
   						}else{
   							
@@ -56,7 +37,7 @@ define(["BaseView","text!TemplateLogin"],function(BaseView,template){
   	  							localStorage.setItem("password",password);
   	  							UC.go("home");
   	  						}else{
-  	  							self.showAlert("鐢ㄦ埛鍚嶅瘑鐮侀敊璇�); 
+  	  							self.showAlert("用户名密码错误"); 
   	  						}
   						}
   					 
@@ -105,5 +86,5 @@ define(["BaseView","text!TemplateLogin"],function(BaseView,template){
   	});
   	 
   	return  LoginView;
-    */
+      	 
 });

@@ -103,7 +103,7 @@ var createCallback = function (func, context, argCount) {
 };
 
 // A mostly-internal function to generate callbacks that can be applied
-// to each element in a collection, returning the desired result �� either
+// to each element in a collection, returning the desired result — either
 // identity, an arbitrary callback, a property matcher, or a property accessor.
 _.iteratee = function (value, context, argCount) {
  if (value == null) return _.identity;
@@ -334,7 +334,7 @@ _.min = function (obj, iteratee, context) {
 };
 
 // Shuffle a collection, using the modern version of the
-// [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher�CYates_shuffle).
+// [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
 _.shuffle = function (obj) {
  var set = obj && obj.length === +obj.length ? obj : _.values(obj);
  var length = set.length;
@@ -5179,11 +5179,11 @@ define("pageConfig",[],function(){
 		configObj,
 		config;
 	try{
-		configObj=eval("("+configStr+")");
+		//configObj=eval("("+configStr+")");
 		config=new Function("return ("+configStr+");")();	
 	}catch(ex){
 		
-		console.error("����json��ʽ������"+ex);
+		console.error("解析json格式出错："+ex);
 	}
 	
 	console.log(configObj);
@@ -5196,7 +5196,7 @@ define("pageConfig",[],function(){
 				this.loadTemplate();
 			},
 			loadCtrl:function(){
-				console.log(config.control);
+			 
 				require([config.control],function(control){
 					console.log(control);
 					
@@ -5219,6 +5219,778 @@ require(["pageConfig"],function(config){
 	config.initPageConfig();
 	
 });
+
+
+
+
+
+define("lib",[],function(){
+	
+	var Animate={
+			Attention:"bounce flash pulse rubberBand shake swing tada wobble".split(" "),
+			BouncingEntrances:"bounceIn bounceInDown bounceInLeft bounceInRight bounceInUp".split(" "),
+			BouncingExits:"bounceOut bounceOutDown bounceOutLeft bounceOutRight bounceOutUp".split(" "),
+			FadingEntrances:"fadeIn fadeInDown fadeInDownBig fadeInLeft fadeInLeftBig fadeInRight fadeInRightBig fadeInUp fadeInUpBig".split(" "),
+			FadingExits:"fadeOut fadeOutDown fadeOutDownBig fadeOutLeft fadeOutLeftBig fadeOutRight fadeOutRightBig fadeOutUp fadeOutUpBig".split(" ")
+			
+	};
+	
+	var UC={
+		params:[],//锟斤拷锟矫匡拷锟絟ash 锟斤拷转时锟斤拷锟斤拷械牟锟斤拷锟�
+		
+		// 全锟斤拷
+		pageInfo:{
+			limit:20
+			
+		},
+		//actionUrl:'http://192.168.1.104:8090/',
+		actionUrl:'http://jinriwuliu.cn:8080/',
+		 
+		isLogin:function(){ 
+			if(localStorage.getItem("username")&&localStorage.getItem("password")){ 
+				return true;
+			}
+			return false;
+		},
+		getUser:function(){
+			if(this.isLogin()){
+				return {
+					username:localStorage.getItem("username"),
+					password:localStorage.getItem("password")
+				};
+			}
+			return null;
+		},
+		PageViewMgr:{
+			mapping:{},
+			pageViewStack:[],
+			add:function(pageView){
+				if(!this.mapping[pageView.name]){
+					this.mapping[pageView.name]=pageView; 
+					this.pageViewStack.push(pageView);
+				} 
+			},
+			isFront:function(currentPage,targetPage){
+				var cindex,tindex;
+				for(var i=0;i<this.pageViewStack.length;i++){
+					if(this.pageViewStack[i].name==currentPage.name){
+						cindex=i;
+					}
+					if(this.pageViewStack[i].name==targetPage.name){
+						tindex=i;
+					}
+				}
+				return cindex>tindex;
+			},
+			get:function(name){
+				return this.mapping[name];
+			},
+			getCurrentShow:function(){
+				var page;
+				for(var pv in this.mapping){
+					if(this.mapping[pv].status){
+						page=this.mapping[pv];
+					}
+				}
+				return page;
+			}, 
+		    //閿�瘉鎸囧畾鐨刾ageView
+		    destroyPageView:function(pageView){
+		    	var index=-1;
+		    	delete this.mapping[pageView.name];
+		    	for(var i=0;i<this.pageViewStack.length;i++){
+					if(this.pageViewStack[i].name==pageView.name){
+						index=i;
+					}
+					 
+				}
+		    	if(index!=-1){
+		    		this.pageViewStack.splice(index,1);
+		    	}
+		    	
+		    	pageView.$pageEl.remove();
+		    	
+		    },
+			
+			
+		}, 
+		
+		// 锟斤拷取页锟斤拷锟叫伙拷锟斤拷前锟斤拷锟角猴拷锟斤拷
+		getDirection:function(currentPage,targetPage){
+			var cindex,tindex,
+				pageViewStack=UC.PageViewMgr.pageViewStack;
+			for(var i=0;i<pageViewStack.length;i++){
+				if(pageViewStack[i].name==currentPage.name){
+					cindex=i;
+				}
+				if(pageViewStack[i].name==targetPage.name){
+					tindex=i;
+				}
+			}
+			if(cindex>tindex){
+				return "back";
+			}else{
+				return "forward";
+			}
+		},
+		
+		show:function(name){
+			var self=this;
+			 			
+			if(this.PageViewMgr.mapping[name]){
+				var currentPageView=this.PageViewMgr.getCurrentShow(), 
+					targetPageView=this.PageViewMgr.mapping[name];
+				currentPageView.hideTips();
+				targetPageView.hideTips();
+				if(self.getDirection(currentPageView,targetPageView)==="back"){
+					self.back(currentPageView,targetPageView);
+				}else if(self.getDirection(currentPageView,targetPageView)==="forward"){
+					self.forward(currentPageView,targetPageView);
+				}
+				//this.PageViewMgr.mapping[name].goParam=goParam;
+				
+				return;
+			}else{
+				this.load(name);
+			}
+			 
+		},
+		// 锟斤拷页模式锟斤拷页锟斤拷锟斤拷转
+		/**
+		 * param.anmi
+		 * */
+		go:function(name,param){
+			//this.goParam=param||this.goParam;
+		
+			if(!$.isEmptyObject(param)){
+				$.extend(this.goParam,param);
+			}else{
+				param={
+					anim:false,
+					duration:300,
+					easing:'linear'
+				};
+			}
+			if(!this.duration){
+				
+				window.location.hash="#"+name;
+			}
+			
+			//this.show(name);
+		},
+		//
+		jump:function(){
+			
+			
+		},
+		//
+		back:function(currentPageView,targetPageView){
+			var self=this;
+			if(self.goParam.anim){
+				if(!self.duration){
+					
+					self.duration=true;
+					targetPageView.show();
+					targetPageView.onShow();
+					targetPageView.status=true; 
+					currentPageView.$pageEl.addClass("animated").addClass(self.animate.animateOut).show().one("webkitAnimationEnd", function(){
+						self.duration=false;
+						currentPageView.$pageEl.removeClass("animated").removeClass(self.animate.animateOut);
+						currentPageView.hide();
+						currentPageView.onHide();
+						currentPageView.status=false; 
+						
+					});
+				}
+					
+				
+			}else{
+				if(!self.duration){ 
+					targetPageView.onShow();
+					targetPageView.show();
+					currentPageView.hide();
+					currentPageView.status=false; 
+					currentPageView.onHide();
+					targetPageView.status=true; 
+
+					
+				}
+			}
+			
+		},
+		//
+		forward:function(currentPageView,targetPageView){
+			var self=this;
+			if(self.goParam.anim){
+				if(!self.duration){
+					self.duration=true;
+					targetPageView.onShow();
+					targetPageView.$pageEl.addClass("animated").addClass(self.animate.animateIn).show().one("webkitAnimationEnd", function(){
+						self.duration=false;
+						targetPageView.$pageEl.removeClass("animated").removeClass(self.animate.animateIn);
+						targetPageView.status=true;
+						currentPageView.status=false;
+						currentPageView.hide();
+						currentPageView.onHide();
+					});	
+				}
+					
+			}else{
+				if(!self.duration){ 
+					targetPageView.onShow();
+					targetPageView.show();
+					targetPageView.status=true;
+					currentPageView.hide();
+					currentPageView.status=false;
+					currentPageView.onHide();
+				}
+				
+								
+			}
+			
+		},
+		load:function(pageViewName){
+			var self=this,
+			    currentPageView=this.PageViewMgr.getCurrentShow();
+			require([pageViewName],function(pageView){ 
+				 var pv=new pageView();
+				 if(self.goParam.anim){
+					 /**
+					 pv.$pageEl.animate({
+							left:'0px'
+					 },self.goParam.anim,self.goParam.easing,function(){
+						//console.log(this); 
+						 pv.status=true;
+						 currentPageView.hide();
+						 currentPageView.status=false;
+						
+					 });
+					 */
+					 if(!self.duration){
+						 self.duration=true;
+						 pv.$pageEl.addClass("animated").addClass("fadeInRight").one("webkitAnimationEnd", function(){
+							 self.duration=false;
+							 pv.status=true;
+							 if(currentPageView){
+								 currentPageView.hide();
+								 currentPageView.status=false;
+								 currentPageView.onHide();
+								 currentPageView.$pageEl.removeClass("animated").removeClass(self.animate.animateIn);
+							 }
+							 
+							 pv.$pageEl.removeClass("animated").removeClass(self.animate.animateIn);
+						 });
+					 }
+					 
+				 }else{
+					 if(!self.duration){
+						 if(currentPageView){ 
+							 currentPageView.hide();
+							 currentPageView.onHide();
+							 currentPageView.status=false;
+						 }
+						 self.PageViewMgr.mapping[pageViewName].show(); 
+					 }
+					 
+					
+					 //alert(123);
+					 /**
+					 self.PageViewMgr.mapping[pageViewName].$pageEl.css({
+						 left:'0px'
+					 });
+					 self.PageViewMgr.mapping[pageViewName].$pageEl.show();
+					 if(currentPageView){
+						 currentPageView.hide();
+						 currentPageView.status=false;
+					 }
+					 */
+					
+				 }
+			
+			});
+		},
+		// 每锟斤拷锟斤拷转使锟斤拷锟斤拷转锟斤拷锟斤拷
+		goParam:{
+			anim:false,
+			duration:300,
+			easing:'linear'
+		},
+		// 全锟斤拷使锟斤拷
+		animate:{
+			anim:true,
+			duration:300,
+			//easing:'linear'
+			animateIn:Animate.FadingEntrances[5],
+			animateOut:Animate.FadingExits[5]
+			
+		},
+		// 锟角凤拷锟斤拷锟斤拷效锟斤拷锟斤拷
+		duration:false,
+		// 锟斤拷要锟斤拷锟絘ndroid back 锟斤拷钮
+	    hybridBack:function(){
+	    	var currentPage= UC.PageViewMgr.getCurrentShow();
+	    	currentPage.triggerBack();
+	    	
+	    },
+	    previewImage:function(url,bakUrl){   
+	    	$("#photograph").find("img").eq(0).attr("src",bakUrl);
+	    	$("#photographIcon").hide();
+	    	$("#photograph").data("url",url); 
+	    	$("#photograph").data("bakUrl",bakUrl); 
+	    	//UC.go('imageView',{url:url});
+	    	window.Native.gotoPreviewImage(url); 
+	    	//this.addYL(123, url);
+	    },
+	    hideLoading:function(id,url){
+	    	
+	    	/**
+	    	var ylArray=JSON.parse(localStorage.getItem("ylArray"));  
+	    	if(!ylArray){
+	    		alert(123);
+	    		ylArray=[];
+	    	} 
+	    	var ylObj={
+    	    		id:id,
+    	    		url:url
+    	    	};
+	    	 
+	    	ylArray.push(ylObj);  
+	    	localStorage.setItem("ylArray",JSON.stringfy(ylArray)); 
+	    	UC.PageViewMgr.mapping["yulu"].refreshDaiYuLu();
+	    	**/
+	    	//alert(UC.PageViewMgr.mapping["yulu"]);
+	    	//alert(UC.PageViewMgr.mapping["yulu"].hideLoading);
+	    	var pg=UC.PageViewMgr.mapping["yulu"];
+	    	pg.hideLoading("");
+	    	var count= parseInt( pg.$el.find("#prerecordCount").val())-1;
+	    	pg.$el.find("#prerecordCount").val("count");
+	    	$("#photograph").find("img").eq(0).attr("src","");
+	    	$("#photographIcon").show();
+	    	$("#photograph").data("url",""); 
+	    	$("#photograph").data("bakUrl",""); 
+	    	pg.showAlert("涓婁紶鎴愬姛.....");
+	    	return;
+	    },
+	    removeYL:function(id){
+	    	
+	    },
+	    hide:function(){
+	    	
+	    }
+			
+	};
+	
+	var Main=Backbone.Router.extend({
+		
+		routes: { 
+			"*actions" : "defaultRoute"
+
+			},
+
+		defaultRoute : function(actions){
+			/**
+		   var name,
+		   	   params=!actions?[]:actions.split("/");
+		   //console.log(actions);
+		  
+		   if(window.location.hash){
+			   name=params[0];
+		   } 
+		   
+		   if(!name){
+			   window.location.hash="login";
+			   return;
+		   }
+		   UC.params=params;
+		   UC.show(name);
+		   */
+
+		},
+		//澶勭悊寮�満鐢婚潰
+		procStartPage:function(){
+			
+		}
+	});
+	window.UC=UC;
+	var main=new Main();
+	Backbone.history.start();
+});
+
+
+
+
+define("alert",[],function(){
+	
+	var Alert=function(){
+		 
+		this.$alert;
+		this.$confirm;
+		this.$toast;
+		this.$loading;
+		
+		/**
+		 * param.title
+		 * param.content
+		 * param.autoHide
+		 * */
+		Alert.prototype.alert=function(param){
+			var self=this,
+				param=param||"";
+			self.maskHTML="<div class='error' style='overflow-y:hidden'><div class='error_text'>"+param+"</div><div class='error_button'></div></div>";
+			if(self.$alert){
+				return;
+			}
+			self.$alert=$(this.maskHTML).appendTo($("body"));
+			Alert.prototype.adjust($(self.$alert[1]));
+			self.$alert.click(function(){
+				self.$alert.remove();
+				self.$alert=null;
+			});
+			setTimeout(function(){
+				if(self.$alert){
+					self.$alert.remove();
+					self.$alert=null;
+				}
+				
+			},3000);
+		};
+		
+		
+		Alert.prototype.adjust=function($el){
+			var screenWidth=$(document).width(),
+				screenHeight=$(document).height(),
+				elWidth=$el.width(),
+				elHeight=$el.height();
+			//console.log(screenWidth,elWidth);
+			 $el.css({
+				 left:(screenWidth-elWidth)/2
+			 });
+		};
+		/**
+		 * param.title
+		 * param.cancel
+		 * param.sure 
+		 * param.sureCallback
+		 * param.cancelCallback
+		 * param.autoHide
+		 * */
+		Alert.prototype.confirm=function(param){
+			var self=this;
+			self.maskHTML="<div class='error'>" 
+					     +"  <div class='error_text'>"+param.title+"</div>"
+					     +"<div class='confirm_button'>"
+					     +"<div class='confirm_button2' name='cancel'>"+param.cancel+"</div>"
+					     +"<div class='confirm_button1' name='sure'>"+param.sure+"</div>"
+					     +"</div>"
+					     +"</div>";
+			
+			if(self.$confirm){
+				return;
+			}
+			self.$confirm=$(this.maskHTML).appendTo($("body"));
+			self.$confirm.addClass("animated").addClass("bounceIn");
+			
+			self.$confirm.find("[name='sure']").click(function(){
+				self.$confirm.one('webkitAnimationEnd',function(){
+					self.$confirm.remove();
+				});
+				self.$confirm.addClass("bounceOut"); 
+				if(param.sureCallback){
+					param.sureCallback();
+				}
+				
+			});
+			self.$confirm.find("[name='cancel']").click(function(){
+				self.$confirm.one('webkitAnimationEnd',function(){
+					self.$confirm.remove();
+					self.$confirm=null;
+				});
+				self.$confirm.addClass("bounceOut");
+				if(param.sureCallback){
+					param.cancelCallback();
+				}
+			 
+			});
+			self.$confirm.on("click",function(){
+				self.$confirm.one('webkitAnimationEnd',function(){
+					if(self.$confirm){
+						self.$confirm.remove();
+						self.$confirm=null;
+					}
+					
+				});
+				self.$confirm.addClass("bounceOut");
+				
+			});
+			
+		}
+		/**
+		 * param.content
+		 * param.duration
+		 * param.callback
+		 * param.autoHide
+		 * */
+		Alert.prototype.toast=function(param){
+			var self=this;
+			self.maskHTML="<div class='cui-view cui-mask cui-opacitymask' style='position: absolute; left: 0px; top: 0px; width: 100%; height: "+$(document).height()+"px;  display: block;'><div></div></div>";
+			self.toastHTML="<div class='cui-view cui-layer cui-toast' style='visibility: visible;  top: 50%; position: fixed;'><div class='cui-layer-padding'><div class='cui-layer-content'>"+param.content+"</div></div></div>";
+			
+			
+			self.$toast=$(this.maskHTML+this.toastHTML).appendTo($("body"));
+			Alert.prototype.adjust($(self.$toast[1]));
+			$(window).on('resize',function(){
+				self.adjust($(self.$toast[1]));
+			});
+			self.$toast.on("click",function(){
+				self.$toast.remove();
+			});
+			 
+			setTimeout(function(){
+				
+			},3000);
+			 
+		}
+		/**
+		 * param.duration
+		 * param.autoHide
+		 * */
+		Alert.prototype.loading=function(param){
+			var self=this,
+				height=$(document).height(),
+				param=param||"";
+			self.maskHTML="<div class='loading' style='height:"+height+"px'> <div class='loading_icon'><img src='res/images/loading.gif'></div><div class='loading_text'>"+param+"</div> </div>";
+			 
+			self.$loading=$(this.maskHTML).appendTo($("body"));
+			
+			//self.$loading.addClass("animated").addClass("bounceIn");
+			/**
+			Alert.prototype.adjust($(self.$loading[1]));
+			$(window).on('resize',function(){
+				self.adjust($(self.$loading[1]));
+			});
+			
+			*/
+			self.$loading.on("click",function(){
+				//self.$loading.addClass("animated").addClass("bounceOut");
+				//self.$loading.remove();
+			});
+			//setTimeout(function(){},5000);
+			 
+			
+		}
+		Alert.prototype.hideLoading=function(param){
+			var self=this;
+			if(self.$loading){
+				self.$loading.addClass("animated").addClass("bounceOut");
+				self.$loading.remove();
+			}
+			
+		}
+		Alert.prototype.hide=function(){
+			var self=this;
+			if(self.$loading){
+				self.$loading.remove();
+			} 
+			if(self.$toast){
+				self.$toast.remove();			
+			}
+			if(self.$confirm){
+				self.$confirm.remove();		
+			}
+			if(self.$alert){
+				self.$alert.remove();		
+			} 
+		}
+	}
+	return Alert;
+});
+
+
+
+
+define("BaseView",['lib','text!TemplateHeader','alert'],function(lib,TemplateHeader,alert){
+	var Header=function(param){
+		this.title=param.title||"";
+		this.back=param.back||false;
+		this.home=param.home||false;
+		this.view=param.view||false;
+		this.pageView=param.pageView;
+		this.$headerEl=null;
+		this.$backBt=null;
+		this.$homeBt=null;
+		this.events={
+			returnHandler:function(){
+				
+			},
+			homeHandler:function(){
+				 
+			}
+				
+		};
+		
+		Header.prototype.set=function(param){
+			 
+			
+		   if(param.view){
+				this.$headerEl.show();
+			}else{
+				this.$headerEl.hide();
+			}
+		    if(!param.back){
+		    	this.$headerEl.find("#headerBack").hide();
+		    }
+			this.$headerEl.find("#title").html(param.title);
+			if(param.events){
+				if(param.events.returnHandler){
+					this.events.returnHandler=param.events.returnHandler;
+				}
+				if(param.events.homeHandler){
+					this.events.homeHandler=param.events.homeHandler;
+				}
+			}
+		 
+			//this.render(param);
+			this.eventSetUp();
+		};
+		Header.prototype.initTemplate=function(){
+			 return _.template(TemplateHeader);
+		};
+		Header.prototype.render=function(param){
+			 var self=this;
+			 var data=param||{
+				 title:self.title,
+				 back:self.back,
+				 home:self.home,
+				 view:self.view
+			 };
+			 var tpl = this.initTemplate();
+	         this.$headerEl=$(tpl({ "data": data })).prependTo(this.pageView.$pageEl);   
+	         //this.eventSetUp();
+	       	 //this.pageView.$el.html(tpl({ "data": param })); 
+		};
+		
+		Header.prototype.eventSetUp=function(){
+			var self=this;
+			 
+			this.$backBt=this.$headerEl.find("#headerBack").on("click",this.events.returnHandler); 
+			this.$homeBt=this.$headerEl.find("#headerHome").on("click",this.events.homeHandler); 
+			 
+		};
+		
+	}
+	var BasePageView=Backbone.View.extend({
+		// 閿熸枻鎷烽敓鎻鎷烽敓鏂ゆ嫹閿熸枻鎷烽敓鏂ゆ嫹 閿熸枻鎷烽敓鏂ゆ嫹閿熸枻鎷穞itle 
+		$el:null,
+		// 閿熸枻鎷烽敓鎻鎷烽敓锟�
+		$pageEl:null,
+		name:null,
+		timestap:null,
+		events:{},
+		status:true,
+		header:null, 
+		alert:null, 
+		initialize:function(){
+			var self=this,
+				$el,
+				name=window.location.hash.substring(1),
+				id=new Date().getTime();
+			self.name=name;
+			self.timestap=id;
+			self.alert=new alert();
+		
+			var height= $(window).height()+48; 
+			self.$pageEl= $("<div id='client_id_viewport_"+id+"' style='display:block;position:absolute;width:100%;height:100%;'page-url='"+name+"' data-view-name='"+name+"' ></div>").appendTo($("body"));
+			
+			self.$el=$("<div id='mian_viewport' style='height:100%;'></div>").appendTo(self.$pageEl);
+			
+			var header=new Header({pageView:self,title:'',back:false,home:false,view:false});
+			header.render();
+			self.header=header;
+			self.onCreate();
+				
+					
+			UC.PageViewMgr.add(self);
+			self.onShow();
+			
+		},
+		// 閿熸枻鎷烽敓鏂ゆ嫹header 閿熸枻鎷穊ack 閿熸枻鎷烽挳
+		triggerBack:function(){
+			this.header.$backBt.trigger("click");
+		},
+		show:function(){ 
+			this.$pageEl.show();
+			
+		},
+		hide:function(){
+			
+			this.$pageEl.hide();
+		},
+		onCreate:function(){
+			
+		},
+		onShow:function(){
+			console.log("show...............");
+		},		
+		onHide:function(){
+			
+			var self=this;
+			self.hideLoading();
+		},
+		showAlert:function(param){
+			this.alert.alert(param);
+		},
+		
+		showConfirm:function(param){
+			
+			this.alert.confirm(param);
+		},
+		
+		showToast:function(param){
+			
+			this.alert.toast(param);
+		},
+		showLoading:function(param){
+			
+			this.alert.loading(param);
+		},
+		hideAlert:function(param){
+			this.alert.hideAlert(param);
+		},
+		
+		hideConfirm:function(param){
+			
+			this.alert.hideConfirm(param);
+		},
+		
+		hideToast:function(param){
+			
+			this.alert.hideToast(param);
+		},
+		hideLoading:function(param){
+			alert("hide...");
+			this.alert.hideLoading(param);
+		},
+		// 鍏抽棴鎵�湁鎻愮ず
+		hideTips:function(){
+			this.alert.hide();
+		}, 
+	    // 濉弧鑳屾櫙楂樺害
+	    fullBGHeight:function(){
+	    	var self=this,
+	    		height=$(document).height();
+	    	 
+	    	console.log($(document).height());
+	    }
+		
+	});
+	return BasePageView;
+});
+
+
+
+
+
+
 
 
 /**

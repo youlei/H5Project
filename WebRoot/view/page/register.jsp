@@ -11,14 +11,14 @@
 	template:[
 		
 	],
-	control:'<%=basePath%>app/ctrl/login.js'
+	control:'<%=basePath%>app/ctrl/register.js'
 	
 }
 
 </script>
 
 
-<%@include file="../template/login.html" %> 
+<%@include file="../template/register.html" %> 
 
 
 
