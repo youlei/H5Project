@@ -1,8 +1,6 @@
 define(["BaseView","text!TemplateLogin"],function(BaseView,template){
 		//console.log("login.................");
-	var tpl= _.template(template);
-	var html= tpl({ "data": {}});
-	$(html).appendTo($("body"));
+	
 	var LoginView=BaseView.extend({
 		
 		initialize:function(){
@@ -15,10 +13,13 @@ define(["BaseView","text!TemplateLogin"],function(BaseView,template){
 		},
 		onShow:function(){
 			console.log("onShow............");
-			
-		},
+			var tpl= _.template(template);
+			var html= tpl({ "data": {}});
+			$(html).appendTo($("body"));
+		}
 		
 	});
+	return LoginView;
 	 /**
   	var LoginView=basePageView.extend({
   		events:{
